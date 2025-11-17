@@ -1,228 +1,844 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel de Control - Silla Inteligente</title>
-
-  <!-- Estilos generales -->
+  <meta charset="UTF-8">
+  <title>Control Silla de Bipedestación</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: linear-gradient(135deg, #0a0a0a, #1c1c1c);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0e1a;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Animated Background */
+    .bg-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      opacity: 0.4;
+      background: 
+        radial-gradient(ellipse at 20% 30%, rgba(0, 212, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(123, 47, 247, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(0, 153, 255, 0.1) 0%, transparent 50%);
+      animation: bgShift 15s ease-in-out infinite;
+    }
+
+    @keyframes bgShift {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.1) rotate(5deg); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
       padding: 20px;
     }
 
-    h1 {
-      margin-bottom: 10px;
+    /* Header with 3D effect */
+    .header {
       text-align: center;
-      color: #00d4ff;
-      text-shadow: 0 0 8px #00d4ff;
+      margin-bottom: 40px;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(123, 47, 247, 0.08) 100%);
+      border-radius: 30px;
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
     }
 
-    /* Contenedor principal */
-    .container {
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+      animation: headerShine 3s linear infinite;
+    }
+
+    @keyframes headerShine {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .header-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .header h1 {
+      font-size: clamp(1.8rem, 5vw, 3.2rem);
+      background: linear-gradient(135deg, #00d4ff 0%, #0099ff 50%, #7b2ff7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 15px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      text-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(0, 212, 255, 0.15);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      padding: 8px 20px;
+      border-radius: 50px;
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      color: #00d4ff;
+      font-weight: 500;
+      margin-top: 10px;
+      backdrop-filter: blur(10px);
+    }
+
+    .author {
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      color: #a0aec0;
+      margin-top: 15px;
+      font-weight: 400;
+    }
+
+    .author strong {
+      background: linear-gradient(135deg, #00d4ff, #7b2ff7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 600;
+    }
+
+    /* Main Layout */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    @media (min-width: 1024px) {
+      .main-grid {
+        grid-template-columns: 1.5fr 1fr;
+      }
+    }
+
+    /* Control Section */
+    .control-section {
+      display: grid;
+      gap: 25px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 25px;
+      padding: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(0, 212, 255, 0.3);
+      box-shadow: 0 12px 40px rgba(0, 212, 255, 0.15);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #00d4ff, #0099ff);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 153, 255, 0.3);
+    }
+
+    .card-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Joystick Style Control */
+    .joystick-container {
+      display: grid;
+      grid-template-areas:
+        ". up ."
+        "left center right"
+        ". down .";
+      gap: 15px;
+      max-width: 400px;
+      margin: 0 auto 30px;
+    }
+
+    .btn-up { grid-area: up; }
+    .btn-left { grid-area: left; }
+    .btn-center { grid-area: center; }
+    .btn-right { grid-area: right; }
+    .btn-down { grid-area: down; }
+
+    .control-btn {
+      background: linear-gradient(145deg, rgba(0, 153, 255, 0.8), rgba(0, 212, 255, 0.6));
+      border: 2px solid rgba(0, 212, 255, 0.5);
+      border-radius: 20px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 0;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 
+        0 4px 15px rgba(0, 153, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      position: relative;
+      overflow: hidden;
+      min-height: 90px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 25px;
-      width: 90%;
-      max-width: 600px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 2px solid rgba(255, 255, 255, 0.1);
+      justify-content: center;
+      gap: 8px;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .control-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.3s, height 0.3s;
+    }
+
+    .control-btn:active::before {
+      width: 200%;
+      height: 200%;
+    }
+
+    .control-btn:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 
+        0 8px 25px rgba(0, 153, 255, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      border-color: rgba(0, 212, 255, 0.8);
+    }
+
+    .control-btn:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 
+        0 2px 10px rgba(0, 153, 255, 0.4),
+        inset 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-icon {
+      font-size: 2rem;
+      line-height: 1;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+
+    .btn-label {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Stop button special style */
+    .btn-stop {
+      background: linear-gradient(145deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.8));
+      border-color: rgba(239, 68, 68, 0.6);
+      box-shadow: 
+        0 4px 15px rgba(239, 68, 68, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      grid-area: center;
+    }
+
+    .btn-stop:hover {
+      box-shadow: 
+        0 8px 25px rgba(239, 68, 68, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      border-color: rgba(239, 68, 68, 0.9);
+    }
+
+    /* Elevation Controls */
+    .elevation-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .elevation-btn {
+      min-height: 75px;
+    }
+
+    .btn-auto {
+      background: linear-gradient(145deg, rgba(245, 158, 11, 0.9), rgba(217, 119, 6, 0.8));
+      border-color: rgba(245, 158, 11, 0.6);
+      box-shadow: 
+        0 4px 15px rgba(245, 158, 11, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-auto:hover {
+      box-shadow: 
+        0 8px 25px rgba(245, 158, 11, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      border-color: rgba(245, 158, 11, 0.9);
+    }
+
+    /* LCD Monitor */
+    .lcd-monitor {
+      background: #000;
+      border: 3px solid #00ff88;
       border-radius: 20px;
       padding: 25px;
-      box-shadow: 0 0 25px rgba(0, 212, 255, 0.3);
+      box-shadow: 
+        0 0 30px rgba(0, 255, 136, 0.3),
+        inset 0 0 20px rgba(0, 255, 136, 0.05);
+      font-family: 'Courier New', monospace;
+      min-height: 180px;
+      position: relative;
+      overflow: hidden;
     }
 
-    /* Joystick */
-    .joystick {
+    .lcd-monitor::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 255, 136, 0.03) 0px,
+        rgba(0, 255, 136, 0.03) 2px,
+        transparent 2px,
+        transparent 4px
+      );
+      pointer-events: none;
+    }
+
+    .lcd-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #00ff88;
       position: relative;
-      width: 180px;
-      height: 180px;
-      background: rgba(255, 255, 255, 0.07);
-      border-radius: 50%;
-      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .lcd-title {
+      color: #00ff88;
+      font-size: 1rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+    }
+
+    .lcd-time {
+      color: #00ff88;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    .lcd-content {
+      color: #00ff88;
+      font-size: 1.05rem;
+      line-height: 1.8;
+      text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+      position: relative;
+      min-height: 80px;
+    }
+
+    .lcd-cursor {
+      display: inline-block;
+      width: 10px;
+      height: 18px;
+      background: #00ff88;
+      margin-left: 5px;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* Status Panel */
+    .status-grid {
+      display: grid;
+      gap: 15px;
+    }
+
+    .status-item {
+      background: rgba(0, 212, 255, 0.05);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .status-item:hover {
+      background: rgba(0, 212, 255, 0.1);
+      border-color: rgba(0, 212, 255, 0.4);
+      transform: translateX(5px);
+    }
+
+    .status-label {
       display: flex;
       align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+      gap: 10px;
+      color: #a0aec0;
+      font-size: 1rem;
+      font-weight: 500;
     }
 
-    .stick {
-      position: absolute;
-      width: 60px;
-      height: 60px;
-      background: #00d4ff;
+    .status-indicator {
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
-      transition: 0.15s;
+      background: #00ff88;
+      box-shadow: 0 0 10px #00ff88;
+      animation: pulse 2s ease-in-out infinite;
     }
 
-    /* Controles de elevación */
-    .lift-controls {
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.6;
+        transform: scale(0.9);
+      }
+    }
+
+    .status-value {
+      color: #00d4ff;
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Quick Stats */
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(123, 47, 247, 0.1));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 212, 255, 0.2);
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #00d4ff, #7b2ff7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      color: #a0aec0;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Instructions */
+    .instructions {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(123, 47, 247, 0.08));
+      border-left: 4px solid #00d4ff;
+      border-radius: 15px;
+      padding: 20px 25px;
+      margin-top: 25px;
+      color: #cbd5e0;
+      line-height: 1.8;
+    }
+
+    .instructions-title {
+      color: #00d4ff;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .instructions ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .instructions li {
+      padding: 8px 0;
+      padding-left: 25px;
+      position: relative;
+    }
+
+    .instructions li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: #00d4ff;
+      font-weight: bold;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: #718096;
+      font-size: 0.95rem;
+      margin-top: 30px;
+    }
+
+    .footer-links {
+      margin-top: 15px;
       display: flex;
       justify-content: center;
       gap: 20px;
+      flex-wrap: wrap;
     }
 
-    button {
-      background: #00d4ff;
-      color: #000;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 10px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.2s;
-      box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+    .footer-link {
+      color: #00d4ff;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      padding: 5px 10px;
+      border-radius: 8px;
     }
 
-    button:hover {
-      background: #00aaff;
-      transform: scale(1.05);
+    .footer-link:hover {
+      background: rgba(0, 212, 255, 0.1);
+      transform: translateY(-2px);
     }
 
-    /* LCD */
-    .lcd {
-      width: 90%;
-      background: #021012;
-      border: 3px solid #00d4ff;
-      border-radius: 10px;
-      color: #00ff88;
-      padding: 10px;
-      font-family: "Courier New", monospace;
-      min-height: 80px;
-      box-shadow: inset 0 0 10px #00d4ff;
-      overflow-y: auto;
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+      }
+
+      .header {
+        padding: 30px 15px;
+        margin-bottom: 25px;
+      }
+
+      .card {
+        padding: 20px;
+      }
+
+      .joystick-container {
+        gap: 12px;
+      }
+
+      .control-btn {
+        min-height: 75px;
+      }
+
+      .btn-icon {
+        font-size: 1.6rem;
+      }
+
+      .elevation-grid {
+        gap: 12px;
+      }
+
+      .quick-stats {
+        grid-template-columns: 1fr;
+      }
     }
 
-    .lcd p {
-      margin: 0;
-      white-space: pre-wrap;
-      line-height: 1.4;
+    /* Loading Animation */
+    .loading {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00ff88;
+      animation: loading 1.2s ease-in-out infinite;
     }
 
+    @keyframes loading {
+      0%, 100% { opacity: 0.2; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
   </style>
-</head>
 
-<body>
-  <h1>Panel de Control - Silla Inteligente</h1>
-  <div class="container">
-    <!-- 🕹️ Joystick -->
-    <div class="joystick" id="joystick">
-      <div class="stick" id="stick"></div>
-    </div>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
 
-    <!-- 🪜 Controles de elevación -->
-    <div class="lift-controls">
-      <button id="btnSubir">Subir</button>
-      <button id="btnBajar">Bajar</button>
-      <button id="btnAuto">Auto</button>
-    </div>
-
-    <!-- 🖥️ LCD -->
-    <div class="lcd" id="lcd">
-      <p>Esperando conexión...</p>
-    </div>
-  </div>
-
-  <!-- 🔥 Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-
-    // 🚀 Configura tus datos de Firebase
+  <script>
+    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "TU_API_KEY",
-      authDomain: "TU_PROYECTO.firebaseapp.com",
-      databaseURL: "https://TU_PROYECTO-default-rtdb.firebaseio.com/",
-      projectId: "TU_PROYECTO",
-      storageBucket: "TU_PROYECTO.appspot.com",
-      messagingSenderId: "XXXXXXXX",
-      appId: "XXXXXXXX"
+      authDomain: "tu-proyecto.firebaseapp.com",
+      databaseURL: "https://tu-proyecto.firebaseio.com",
+      projectId: "tu-proyecto",
+      storageBucket: "tu-proyecto.appspot.com",
+      messagingSenderId: "XXX",
+      appId: "XXX"
     };
 
-    // Inicialización Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    // 🔘 Joystick
-    const joystick = document.getElementById("joystick");
-    const stick = document.getElementById("stick");
-    let centerX, centerY;
+    let commandCount = 0;
+    let lastCommand = 'detener';
+    let sessionStart = new Date();
 
-    joystick.addEventListener("mousedown", startMove);
-    joystick.addEventListener("touchstart", startMove);
-
-    function startMove(e) {
-      e.preventDefault();
-      const rect = joystick.getBoundingClientRect();
-      centerX = rect.left + rect.width / 2;
-      centerY = rect.top + rect.height / 2;
-      document.addEventListener("mousemove", moveStick);
-      document.addEventListener("mouseup", stopMove);
-      document.addEventListener("touchmove", moveStick);
-      document.addEventListener("touchend", stopMove);
+    function enviarComando(cmd) {
+      db.ref("comando").set(cmd);
+      commandCount++;
+      lastCommand = cmd;
+      
+      const timestamp = new Date().toLocaleTimeString('es-ES');
+      const messages = {
+        'adelante': '⬆ AVANZANDO',
+        'atras': '⬇ RETROCEDIENDO',
+        'izquierda': '⬅ GIRANDO A LA IZQUIERDA',
+        'derecha': '➡ GIRANDO A LA DERECHA',
+        'elevar': '⬆ ELEVANDO SILLA',
+        'bajar': '⬇ BAJANDO SILLA',
+        'auto': '⚙ MODO AUTOMÁTICO ACTIVADO',
+        'detener': '⏸ SISTEMA DETENIDO'
+      };
+      
+      mostrarMensajeLCD(`[${timestamp}]\n${messages[cmd] || 'COMANDO ENVIADO'}`);
+      actualizarEstado(cmd);
+      actualizarStats();
     }
 
-    function moveStick(e) {
-      let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    function mostrarMensajeLCD(msg) {
+      const lcd = document.getElementById("lcdContent");
+      lcd.textContent = msg;
+    }
 
-      const dx = clientX - centerX;
-      const dy = clientY - centerY;
-      const distance = Math.min(60, Math.sqrt(dx * dx + dy * dy));
-      const angle = Math.atan2(dy, dx);
+    function actualizarEstado(cmd) {
+      const estadoEl = document.getElementById("estadoActual");
+      const estados = {
+        'adelante': '⬆ Avanzando',
+        'atras': '⬇ Retrocediendo',
+        'izquierda': '⬅ Girando Izq.',
+        'derecha': '➡ Girando Der.',
+        'elevar': '⬆ Elevando',
+        'bajar': '⬇ Bajando',
+        'auto': '⚙ Modo Auto',
+        'detener': '⏸ Detenido'
+      };
+      estadoEl.textContent = estados[cmd] || 'Desconocido';
+    }
 
-      const stickX = distance * Math.cos(angle);
-      const stickY = distance * Math.sin(angle);
+    function actualizarStats() {
+      document.getElementById("comandosTotal").textContent = commandCount;
+      const uptime = Math.floor((new Date() - sessionStart) / 1000 / 60);
+      document.getElementById("tiempoActivo").textContent = uptime;
+    }
 
-      stick.style.transform = `translate(${stickX}px, ${stickY}px)`;
+    function actualizarReloj() {
+      const now = new Date();
+      document.getElementById("lcdTime").textContent = now.toLocaleTimeString('es-ES');
+    }
 
-      let command = "STOP";
-      if (distance > 20) {
-        if (Math.abs(dx) > Math.abs(dy)) {
-          command = dx > 0 ? "DERECHA" : "IZQUIERDA";
-        } else {
-          command = dy > 0 ? "ATRAS" : "ADELANTE";
-        }
+    // Firebase listener
+    db.ref("lcd").on("value", (snapshot) => {
+      const msg = snapshot.val();
+      if (msg) {
+        mostrarMensajeLCD(msg);
       }
-      enviarComando("movimiento", command);
-    }
+    });
 
-    function stopMove() {
-      stick.style.transform = "translate(0, 0)";
-      enviarComando("movimiento", "STOP");
-      document.removeEventListener("mousemove", moveStick);
-      document.removeEventListener("mouseup", stopMove);
-      document.removeEventListener("touchmove", moveStick);
-      document.removeEventListener("touchend", stopMove);
-    }
-
-    // 🪜 Botones de elevación
-    document.getElementById("btnSubir").addEventListener("click", () => enviarComando("elevacion", "SUBIR"));
-    document.getElementById("btnBajar").addEventListener("click", () => enviarComando("elevacion", "BAJAR"));
-    document.getElementById("btnAuto").addEventListener("click", () => enviarComando("elevacion", "AUTO"));
-
-    // 📤 Envío de comandos
-    function enviarComando(ruta, valor) {
-      set(ref(db, "silla/" + ruta), valor);
-    }
-
-    // 📥 Lectura de mensajes (LCD)
-    const lcd = document.getElementById("lcd");
-    const lcdRef = ref(db, "silla/lcd");
-
-    onValue(lcdRef, (snapshot) => {
-      const texto = snapshot.val() || "Sin datos";
-      lcd.innerHTML = `<p>${texto}</p>`;
+    // Inicialización
+    window.addEventListener('load', () => {
+      mostrarMensajeLCD("SISTEMA INICIADO\nLISTO PARA OPERAR");
+      actualizarEstado('detener');
+      setInterval(actualizarReloj, 1000);
+      actualizarReloj();
     });
   </script>
-</body>
-</html>
+</head>
+<body>
+  <div class="bg-animation"></div>
+  
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-content">
+        <h1>🦾 Control de Silla de Bipedestación</h1>
+        <div class="badge">🏆 Sistema de Control Avanzado v2.0</div>
+        <div class="author">
+          Desarrollado por <strong>Gian Alberto Gutiérrez Morales</strong><br>
+          Ingeniería Mecatrónica | USFX
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+      <!-- Control Section -->
+      <div class="control-section">
+        <!-- Joystick Control -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">🎮</div>
+            <div class="card-title">Control de Movimiento</div>
+          </div>
+          
+          <div class="joystick-container">
+            <button class="control-btn btn-up" 
+                    onmousedown="enviarComando('adelante')" 
+                    onmouseup="enviarComando('detener')"
+                    ontouchstart="enviarComando('adelante')" 
+                    ontouchend="enviarComando('detener')">
+              <span class="btn-icon">↑</span>
+              <span class="btn-label">Avanzar</span>
+            </button>
+
+            <button class="control-btn btn-left" 
+                    onmousedown="enviarComando('izquierda')" 
+                    onmouseup="enviarComando('detener')"
+                    ontouchstart="enviarComando('izquierda')" 
+                    ontouchend="enviarComando('detener')">
+              <span class="btn-icon">←</span>
+              <span class="btn-label">Izquierda</span>
+            </button>
+
+            <button class="control-btn btn-stop" 
+                    onmousedown="enviarComando('detener')"
+                    ontouchstart="enviarComando('detener')">
+              <span class="btn-icon">⏹</span>
+              <span class="btn-label">STOP</span>
+            </button>
+
+            <button class="control-btn btn-right" 
+                    onmousedown="enviarComando('derecha')" 
+                    onmouseup="enviarComando('detener')"
+                    ontouchstart="enviarComando('derecha')" 
+                    ontouchend="enviarComando('detener')">
+              <span class="btn-icon">→</span>
+              <span class="btn-label">Derecha</span>
+            </button>
+
+            <button class="control-btn btn-down" 
+                    onmousedown="enviarComando('atras')" 
+                    onmouseup="enviarComando('detener')"
+                    ontouchstart="enviarComando('atras')" 
+                    ontouchend="enviarComando('detener')">
+              <span class="btn-icon">↓</span>
+              <span class="btn-label">Retroceder</span>
+            </button>
+          </div>
+
+          <div class="card-header" style="margin-top: 30px;">
+            <div class="card-icon">⚡</div>
+            <div class="card-title">Control de Elevación</div>
+          </div>
+
+          <div class="elevation-grid">
+            <button class="control-btn elevation-btn" 
+                    onmousedown="enviarComando('elevar')" 
+                    onmouseup="enviarComando('detener')"
+                    ontouchstart="enviarComando('elevar')" 
+                    ontouchend="enviarComando('detener')">
+              <span class="btn-icon">⬆</span>
+              <span class="btn-label">Elevar</span>
+            </button>
+
+            <button class="control-btn elevation-btn btn-auto" 
+                    onmousedown="enviarComando('auto')" 
+                    onmouseup="enviarComando('detener')"
+                    ontouchstart="enviarComando('auto')" 
+                    ontouchend="enviarComando('detener')">
+              <span class="btn-icon">⚙</span>
+              <span class="btn-label">Auto</span>
+            </button>
+
+            <button class="control-btn elevation-btn" 
+                    onmousedown="enviarComando('bajar')" 
+                    onmouseup="enviarComando('detener')"
+                    ontouchstart="enviarComando('bajar')" 
+                    ontouchend="enviarComando('detener')">
+              <span class="btn-icon">⬇</span>
+              <span class="btn-label">Bajar</span>
+            </button>
+          </div>
+
+          <div class="instructions">
+            <div class="instructions-title">💡 Instrucciones de Uso</div>
+            <ul>
+              <li>Mantén presionado cualquier botón para ejecutar la acción</li>
+              <li>Al soltar el botón, la silla se detendrá automáticamente</li>
+              <li>El botón STOP detiene inmediatamente cualquier movimiento</li>
+              <li>El modo AUTO ejecuta secuencias programadas</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Section -->
+      <div class="control-section">
+        <!-- LCD Monitor -->
+        <div class="card">
+          <div class="lcd-monitor">
+            <div class="lcd-header">
+              <div class="lcd-title">█ MONITOR SISTEMA
